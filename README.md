@@ -1,17 +1,20 @@
 # Epic Free Games Notifier
 
-A Python script with GitHub Actions integration to notify users about free games on the Epic Games Store via email. Because who doesn't love free games?
+![Build Status](https://img.shields.io/github/workflow/status/your-username/epic-free-games-notifier/CI)
+![License](https://img.shields.io/github/license/your-username/epic-free-games-notifier)
+
+A Python script with GitHub Actions integration to notify users about free games on the Epic Games Store via email. Because who doesn't love free games? 🎮
 
 ## Features
 
-- Fetches free games from the Epic Games Store. (Yes, free as in zero dollars!)
-- Sends email notifications with details about the free games. (No spam, we promise!)
-- Scheduled to run daily using GitHub Actions. (Set it and forget it!)
+- Fetches free games from the Epic Games Store. (Yes, free as in zero dollars! 💸)
+- Sends email notifications with details about the free games. (No spam, we promise! 📧)
+- Scheduled to run daily using GitHub Actions. (Set it and forget it! ⏰)
 
 ## Prerequisites
 
-- Python 3.x (Python 2.x is so last decade)
-- GitHub account (You have one, right?)
+- Python 3.x (Python 2.x is so last decade 🕰️)
+- GitHub account (You have one, right? 🤔)
 
 ## Setup
 
@@ -62,44 +65,44 @@ Go to your GitHub repository, navigate to `Settings > Secrets and variables > Ac
 
 ### 2. Configure GitHub Actions Workflow
 
-The workflow file is located at `notify_free_games.yml`. It is configured to run daily at 12:00 UTC and can also be triggered manually. (Because sometimes you just can't wait for free games!)
+The workflow file is located at `notify_free_games.yml`. It is configured to run daily at 12:00 UTC and can also be triggered manually. (Because sometimes you just can't wait for free games! 🎉)
 
 ### 3. Enable GitHub Actions
 
-Ensure that GitHub Actions is enabled for your repository. The workflow will automatically run according to the schedule and send email notifications. (Sit back and relax!)
+Ensure that GitHub Actions is enabled for your repository. The workflow will automatically run according to the schedule and send email notifications. (Sit back and relax! 🛋️)
 
 ## Script Details
 
 The `check_free_games.py` script performs the following steps:
 
-1. **Fetch Free Games**: The script fetches the list of free games from the Epic Games Store. (Free games, yay!)
-2. **Send Email Notification**: If free games are found, the script sends an email notification with the details of the free games. (Your inbox will thank you!)
+1. **Fetch Free Games**: The script fetches the list of free games from the Epic Games Store. (Free games, yay! 🥳)
+2. **Send Email Notification**: If free games are found, the script sends an email notification with the details of the free games. (Your inbox will thank you! 📬)
 
 ### Example Code Snippet
 
 ```python
 try:
-    print("Connecting to SMTP server...")
+    logging.info("Connecting to SMTP server...")
     with smtplib.SMTP(SMTP_SERVER, int(SMTP_PORT)) as server:
         server.set_debuglevel(1)  # Enable debug logs
         server.starttls()
-        print("Logging in to SMTP server...")
+        logging.info("Logging in to SMTP server...")
         server.login(EMAIL, PASSWORD)
-        print("Sending email...")
+        logging.info("Sending email...")
         server.send_message(msg)
-        print("Email sent successfully.")
+        logging.info("Email sent successfully.")
 except Exception as e:
-    print(f"Failed to send email: {e}")
+    logging.error(f"Failed to send email: {e}")
 
 def main():
     """Main function to fetch games and send notifications."""
-    print("Fetching free games...")
+    logging.info("Fetching free games...")
     free_games = fetch_free_games()
     if free_games:
-        print("Free games found! Sending notification...")
+        logging.info("Free games found! Sending notification...")
         send_email(free_games)
     else:
-        print("No free games available at the moment.")
+        logging.info("No free games available at the moment.")
 
 if __name__ == "__main__":
     main()
@@ -107,8 +110,8 @@ if __name__ == "__main__":
 
 ## Contributing
 
-Feel free to open issues or submit pull requests if you have any improvements or suggestions. (We love contributions as much as we love free games!)
+Feel free to open issues or submit pull requests if you have any improvements or suggestions. (We love contributions as much as we love free games! ❤️)
 
 ## License
 
-This project is licensed under the WTFPL License. See the `LICENSE` file for more details. (Do what you want, it's free!)
+This project is licensed under the WTFPL License. See the `LICENSE` file for more details. (Do what you want, it's free! 😎)
