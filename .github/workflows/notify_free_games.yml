@@ -28,4 +28,5 @@ jobs:
         EMAIL: ${{ secrets.EMAIL }}
         PASSWORD: ${{ secrets.PASSWORD }}
         TO_EMAIL: ${{ secrets.TO_EMAIL }}
+        FROM_EMAIL: ${{ secrets.FROM_EMAIL }}  # Added FROM_EMAIL here
       run: python check_free_games.py

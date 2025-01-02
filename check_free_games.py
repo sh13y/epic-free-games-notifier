@@ -10,9 +10,10 @@ load_dotenv()
 
 SMTP_SERVER = os.getenv("SMTP_SERVER")
 SMTP_PORT = os.getenv("SMTP_PORT")
-EMAIL = os.getenv("EMAIL")
+EMAIL = os.getenv("EMAIL")  # This is your SMTP login email
 PASSWORD = os.getenv("PASSWORD")
 TO_EMAIL = os.getenv("TO_EMAIL")
+FROM_EMAIL = os.getenv("FROM_EMAIL")  # This is the email you want to appear in the "From" field
 
 def fetch_free_games():
     """Fetch free games from the Epic Games Store."""
@@ -26,12 +27,21 @@ def fetch_free_games():
         if game.get("promotions"):
             for promo in game["promotions"].get("promotionalOffers", []):
                 for offer in promo.get("promotionalOffers", []):
-                    free_games.append({
-                        "title": game.get("title"),
-                        "url": f"https://store.epicgames.com/en-US/p/{game.get('productSlug')}",
-                        "start_date": offer.get("startDate"),
-                        "end_date": offer.get("endDate"),
-                    })
+                    # Check if the game is free (no price or marked as "free")
+                    original_price = game.get("price", {}).get("totalPrice", {}).get("originalPrice", 0)
+                    discounted_price = game.get("price", {}).get("totalPrice", {}).get("discountPrice", 0)
+                    
+                    if original_price == 0 and discounted_price == 0:  # Check if it's free
+                        free_games.append({
+                            "title": game.get("title"),
+                            "description": game.get("description", "No description available."),
+                            "original_price": "Free",
+                            "discounted_price": "Free",
+                            "image_url": game.get("keyImages", [{}])[0].get("url", ""),
+                            "url": f"https://store.epicgames.com/en-US/p/{game.get('productSlug')}",
+                            "start_date": offer.get("startDate"),
+                            "end_date": offer.get("endDate"),
+                        })
     return free_games
 
 def send_email(free_games):
@@ -41,20 +51,52 @@ def send_email(free_games):
         return
     
     subject = "Free Games on Epic Games Store!"
-    body = "Here are the free games currently available on the Epic Games Store:\n\n"
-    for game in free_games:
-        body += f"- {game['title']} (Valid until: {game['end_date']})\n  Link: {game['url']}\n\n"
+    body = """
+    <html>
+    <body>
+        <h2>Free Games Available on the Epic Games Store!</h2>
+        <p>Here are the free games currently available on the Epic Games Store:</p>
+        <table border="0" cellspacing="20" cellpadding="10">
+    """
     
-    msg = MIMEMultipart()
-    msg["From"] = EMAIL
+    # Build the email body with the game's details, including image, description, and price
+    for game in free_games:
+        body += f"""
+        <tr>
+            <td>
+                <img src="{game['image_url']}" alt="{game['title']}" width="150" />
+            </td>
+            <td>
+                <h3>{game['title']}</h3>
+                <p>{game['description']}</p>
+                <p><b>Original Price:</b> {game['original_price']}</p>
+                <p><b>Discounted Price:</b> {game['discounted_price']}</p>
+                <p><a href="{game['url']}">Get it now!</a></p>
+                <p><i>Valid until: {game['end_date']}</i></p>
+            </td>
+        </tr>
+        """
+    
+    body += """
+        </table>
+    </body>
+    </html>
+    """
+
+    msg = MIMEMultipart("alternative")
+    msg["From"] = FROM_EMAIL  # Use the 'From' email address specified in .env
     msg["To"] = TO_EMAIL
     msg["Subject"] = subject
-    msg.attach(MIMEText(body, "plain"))
+    msg.attach(MIMEText(body, "html"))
 
     try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        print("Connecting to SMTP server...")
+        with smtplib.SMTP(SMTP_SERVER, int(SMTP_PORT)) as server:
+            server.set_debuglevel(1)  # Enable debug logs
             server.starttls()
+            print("Logging in to SMTP server...")
             server.login(EMAIL, PASSWORD)
+            print("Sending email...")
             server.send_message(msg)
             print("Email sent successfully.")
     except Exception as e:
