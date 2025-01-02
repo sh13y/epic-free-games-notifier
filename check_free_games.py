@@ -8,6 +8,7 @@ import os
 # Load environment variables from .env file
 load_dotenv()
 
+# Get SMTP and email configuration from environment variables
 SMTP_SERVER = os.getenv("SMTP_SERVER")
 SMTP_PORT = os.getenv("SMTP_PORT")
 EMAIL = os.getenv("EMAIL")  # This is your SMTP login email
@@ -19,8 +20,8 @@ def fetch_free_games():
     """Fetch free games from the Epic Games Store."""
     url = "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions"
     response = requests.get(url)
-    response.raise_for_status()
-    data = response.json()
+    response.raise_for_status()  # Raise an error if the request failed
+    data = response.json()  # Parse the response as JSON
     
     free_games = []
     for game in data.get("data", {}).get("Catalog", {}).get("searchStore", {}).get("elements", []):
@@ -83,6 +84,7 @@ def send_email(free_games):
     </html>
     """
 
+    # Create the email message
     msg = MIMEMultipart("alternative")
     msg["From"] = FROM_EMAIL  # Use the 'From' email address specified in .env
     msg["To"] = TO_EMAIL
@@ -93,11 +95,11 @@ def send_email(free_games):
         print("Connecting to SMTP server...")
         with smtplib.SMTP(SMTP_SERVER, int(SMTP_PORT)) as server:
             server.set_debuglevel(1)  # Enable debug logs
-            server.starttls()
+            server.starttls()  # Secure the connection
             print("Logging in to SMTP server...")
-            server.login(EMAIL, PASSWORD)
+            server.login(EMAIL, PASSWORD)  # Log in to the SMTP server
             print("Sending email...")
-            server.send_message(msg)
+            server.send_message(msg)  # Send the email
             print("Email sent successfully.")
     except Exception as e:
         print(f"Failed to send email: {e}")
