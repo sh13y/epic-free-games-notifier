@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
 ## Screenshot
 
-Here is an example of the email you will receive:
+Here is an example of the email you will receive (yes, it looks this good!):
 
 ![Email Screenshot](assets/Screenshot_20250103-025754.png)
 
