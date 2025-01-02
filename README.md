@@ -21,7 +21,7 @@ A Python script with GitHub Actions integration to notify users about free games
 ### 1. Clone the Repository
 
 ```sh
-git clone https://github.com/your-username/epic-free-games-notifier.git
+git clone https://github.com/sh13y/epic-free-games-notifier.git
 cd epic-free-games-notifier
 ```
 
@@ -107,6 +107,12 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
+## Screenshot
+
+Here is an example of the email you will receive:
+
+![Email Screenshot](assets/Screenshot_20250103-025754.png)
 
 ## Contributing
 

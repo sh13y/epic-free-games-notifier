@@ -130,12 +130,19 @@ def send_email(free_games):
                 color: #333;
             }
             .game-details .price span {
-                color: #4CAF50;
+                background-color: red;
+                color: white;
+                padding: 3px 6px;
+                text-decoration: none;
+                border-radius: 3px;
+                font-weight: bold;
+                display: inline-block;
+                margin-top: 10px;
             }
             .game-details a {
-                background-color: #4CAF50;
-                color: white;
-                padding: 10px 20px;
+                background-color: #fcb900;
+                color: black;
+                padding: 8px 16px;
                 text-decoration: none;
                 border-radius: 5px;
                 font-weight: bold;
@@ -145,7 +152,7 @@ def send_email(free_games):
             .game-details .offer-end {
                 font-size: 14px;
                 color: #888;
-                margin-top: 10px;
+                margin-top: 20px;
             }
         </style>
     </head>
@@ -157,7 +164,6 @@ def send_email(free_games):
             </div>
             <div class="content">
     """
-    
     # Build the email body with the game's details, including image, description, and price
     for game in free_games:
         end_date = format_date(game['end_date'])  # Format the end date for better readability
