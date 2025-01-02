@@ -1,7 +1,7 @@
 # Epic Free Games Notifier
 
-![Build Status](https://img.shields.io/github/workflow/status/your-username/epic-free-games-notifier/CI)
-![License](https://img.shields.io/github/license/your-username/epic-free-games-notifier)
+![Build Status](https://img.shields.io/github/workflow/status/sh13y/epic-free-games-notifier/CI)
+![License](https://img.shields.io/github/license/sh13y/epic-free-games-notifier)
 
 A Python script with GitHub Actions integration to notify users about free games on the Epic Games Store via email. Because who doesn't love free games? 🎮
 
