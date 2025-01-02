@@ -2,12 +2,13 @@ name: Notify Free Games
 
 on:
   schedule:
-    - cron: '0 12 * * *'  # Run daily at 12:00 UTC
-  workflow_dispatch:  # Allow manual triggers
+    - cron: '0 12 * * *'  # Runs daily at 12:00 UTC
+  workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
@@ -18,7 +19,7 @@ jobs:
         python-version: '3.x'
 
     - name: Install Dependencies
-      run: pip install requests
+      run: pip install requests python-dotenv
 
     - name: Run Script
       env:

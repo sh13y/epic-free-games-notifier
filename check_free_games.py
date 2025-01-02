@@ -2,15 +2,20 @@ import requests
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+import os
 
-# Configuration
-SMTP_SERVER = "smtp.gmail.com"  # Your SMTP server
-SMTP_PORT = 587
-EMAIL = "your_email@example.com"  # Your email
-PASSWORD = "your_email_password"  # Your email password
-TO_EMAIL = "to_email@example.com"  # Recipient's email
+# Load environment variables from .env file
+load_dotenv()
+
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = os.getenv("SMTP_PORT")
+EMAIL = os.getenv("EMAIL")
+PASSWORD = os.getenv("PASSWORD")
+TO_EMAIL = os.getenv("TO_EMAIL")
 
 def fetch_free_games():
+    """Fetch free games from the Epic Games Store."""
     url = "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions"
     response = requests.get(url)
     response.raise_for_status()
@@ -30,6 +35,11 @@ def fetch_free_games():
     return free_games
 
 def send_email(free_games):
+    """Send an email with details about free games."""
+    if not free_games:
+        print("No free games to notify.")
+        return
+    
     subject = "Free Games on Epic Games Store!"
     body = "Here are the free games currently available on the Epic Games Store:\n\n"
     for game in free_games:
@@ -41,15 +51,21 @@ def send_email(free_games):
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
 
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-        server.starttls()
-        server.login(EMAIL, PASSWORD)
-        server.send_message(msg)
-        print("Email sent successfully.")
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(EMAIL, PASSWORD)
+            server.send_message(msg)
+            print("Email sent successfully.")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
 
 def main():
+    """Main function to fetch games and send notifications."""
+    print("Fetching free games...")
     free_games = fetch_free_games()
     if free_games:
+        print("Free games found! Sending notification...")
         send_email(free_games)
     else:
         print("No free games available at the moment.")
