@@ -1,17 +1,17 @@
 # Epic Free Games Notifier
 
-A Python script with GitHub Actions integration to notify users about free games on the Epic Games Store via email.
+A Python script with GitHub Actions integration to notify users about free games on the Epic Games Store via email. Because who doesn't love free games?
 
 ## Features
 
-- Fetches free games from the Epic Games Store.
-- Sends email notifications with details about the free games.
-- Scheduled to run daily using GitHub Actions.
+- Fetches free games from the Epic Games Store. (Yes, free as in zero dollars!)
+- Sends email notifications with details about the free games. (No spam, we promise!)
+- Scheduled to run daily using GitHub Actions. (Set it and forget it!)
 
 ## Prerequisites
 
-- Python 3.x
-- GitHub account
+- Python 3.x (Python 2.x is so last decade)
+- GitHub account (You have one, right?)
 
 ## Setup
 
@@ -62,18 +62,18 @@ Go to your GitHub repository, navigate to `Settings > Secrets and variables > Ac
 
 ### 2. Configure GitHub Actions Workflow
 
-The workflow file is located at `notify_free_games.yml`. It is configured to run daily at 12:00 UTC and can also be triggered manually.
+The workflow file is located at `notify_free_games.yml`. It is configured to run daily at 12:00 UTC and can also be triggered manually. (Because sometimes you just can't wait for free games!)
 
 ### 3. Enable GitHub Actions
 
-Ensure that GitHub Actions is enabled for your repository. The workflow will automatically run according to the schedule and send email notifications.
+Ensure that GitHub Actions is enabled for your repository. The workflow will automatically run according to the schedule and send email notifications. (Sit back and relax!)
 
 ## Script Details
 
 The `check_free_games.py` script performs the following steps:
 
-1. **Fetch Free Games**: The script fetches the list of free games from the Epic Games Store.
-2. **Send Email Notification**: If free games are found, the script sends an email notification with the details of the free games.
+1. **Fetch Free Games**: The script fetches the list of free games from the Epic Games Store. (Free games, yay!)
+2. **Send Email Notification**: If free games are found, the script sends an email notification with the details of the free games. (Your inbox will thank you!)
 
 ### Example Code Snippet
 
@@ -95,7 +95,7 @@ def main():
     """Main function to fetch games and send notifications."""
     print("Fetching free games...")
     free_games = fetch_free_games()
-    if (free_games):
+    if free_games:
         print("Free games found! Sending notification...")
         send_email(free_games)
     else:
@@ -107,8 +107,8 @@ if __name__ == "__main__":
 
 ## Contributing
 
-Feel free to open issues or submit pull requests if you have any improvements or suggestions.
+Feel free to open issues or submit pull requests if you have any improvements or suggestions. (We love contributions as much as we love free games!)
 
 ## License
 
-This project is licensed under the WTFPL License. See the `LICENSE` file for more details.
+This project is licensed under the WTFPL License. See the `LICENSE` file for more details. (Do what you want, it's free!)
