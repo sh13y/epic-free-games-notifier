@@ -46,20 +46,23 @@ def fetch_free_games():
             for promo in game["promotions"].get("promotionalOffers", []):
                 for offer in promo.get("promotionalOffers", []):
                     # Check if the game is free (no price or marked as "free")
-                    original_price = game.get("price", {}).get("totalPrice", {}).get("originalPrice", 0)
                     discounted_price = game.get("price", {}).get("totalPrice", {}).get("discountPrice", 0)
                     
                     if discounted_price == 0:  # Check if it's free
-                        free_games.append({
-                            "title": game.get("title"),
-                            "description": game.get("description", "No description available."),
-                            "original_price": "Free",
-                            "discounted_price": "Free",
-                            "image_url": game.get("keyImages", [{}])[0].get("url", ""),
-                            "url": f"https://store.epicgames.com/en-US/p/{game.get('pageSlug')}",
-                            "start_date": offer.get("startDate"),
-                            "end_date": offer.get("endDate"),
-                        })
+                        # Extracting the correct urlSlug from catalogNs.mappings
+                        url_slug = next((mapping.get('pageSlug') for mapping in game.get('catalogNs', {}).get('mappings', []) if mapping.get('pageSlug')), None)
+                        
+                        if url_slug:  # Ensure url_slug is not None
+                            free_games.append({
+                                "title": game.get("title"),
+                                "description": game.get("description", "No description available."),
+                                "original_price": "Free",
+                                "discounted_price": "Free",
+                                "image_url": game.get("keyImages", [{}])[0].get("url", ""),
+                                "url": f"https://store.epicgames.com/en-US/p/{url_slug}",
+                                "start_date": offer.get("startDate"),
+                                "end_date": offer.get("endDate"),
+                            })
     return free_games
 
 def send_email(free_games):
