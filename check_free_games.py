@@ -49,7 +49,7 @@ def fetch_free_games():
                     original_price = game.get("price", {}).get("totalPrice", {}).get("originalPrice", 0)
                     discounted_price = game.get("price", {}).get("totalPrice", {}).get("discountPrice", 0)
                     
-                    if original_price == 0 and discounted_price == 0:  # Check if it's free
+                    if discounted_price == 0:  # Check if it's free
                         free_games.append({
                             "title": game.get("title"),
                             "description": game.get("description", "No description available."),
