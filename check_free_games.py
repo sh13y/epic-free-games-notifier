@@ -56,7 +56,7 @@ def fetch_free_games():
                             "original_price": "Free",
                             "discounted_price": "Free",
                             "image_url": game.get("keyImages", [{}])[0].get("url", ""),
-                            "url": f"https://store.epicgames.com/en-US/p/{game.get('productSlug')}",
+                            "url": f"https://store.epicgames.com/en-US/p/{game.get('pageSlug')}",
                             "start_date": offer.get("startDate"),
                             "end_date": offer.get("endDate"),
                         })
