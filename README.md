@@ -108,3 +108,32 @@ Feel free to open issues or submit pull requests if you have any improvements or
 
 ## License
 This project is licensed under the WTFPL License. See the `LICENSE` file for more details. (Do what you want, it's free! 😎)
+
+## Code Structure
+- Organized imports following PEP 8 standards
+  - Standard library imports first
+  - Third-party imports (requests, dotenv) separated
+- Type hints added for better code readability
+- Error handling for API responses and data parsing
+- Logging for tracking execution and errors
+
+## Error Handling
+The script handles several error cases:
+- API connection failures
+- Invalid response data
+- Missing game information
+- Email sending failures
+
+## Return Values
+- `fetch_free_games()`: Returns `None` if no games found or on error, otherwise returns a list of free games
+- `send_email()`: Returns `None` after sending email or on error
+
+## Recent Updates
+- **Code Refactoring**: 
+  - Improved code organization following PEP 8
+  - Enhanced error handling for better reliability
+  - Added type hints for better code maintenance
+- **Documentation**: 
+  - Added detailed error handling documentation
+  - Clarified function return values
+  - Updated technical architecture details
