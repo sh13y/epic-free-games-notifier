@@ -28,6 +28,29 @@ FROM_EMAIL = os.getenv(
 )  # This is the email you want to appear in the "From" field
 
 
+def check_env_variables():
+    """Check if all required environment variables are set."""
+    required_vars = {
+        "SMTP_SERVER": os.getenv("SMTP_SERVER"),
+        "SMTP_PORT": os.getenv("SMTP_PORT"),
+        "EMAIL": os.getenv("EMAIL"),
+        "PASSWORD": os.getenv("PASSWORD"),
+        "TO_EMAIL": os.getenv("TO_EMAIL"),
+        "FROM_EMAIL": os.getenv("FROM_EMAIL")
+    }
+    
+    missing_vars = [var for var, value in required_vars.items() if not value]
+    
+    if missing_vars:
+        raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+    
+    # Validate SMTP_PORT is a valid integer
+    try:
+        int(required_vars["SMTP_PORT"])
+    except ValueError:
+        raise ValueError(f"SMTP_PORT must be a valid number, got: {required_vars['SMTP_PORT']}")
+
+
 def format_date(date_string):
     """Format the date string to a more readable format."""
     try:
@@ -107,7 +130,7 @@ def send_email(free_games):
     """Send an email with details about free games."""
     if not free_games:
         logging.info("No free games to notify.")
-        return None
+        return False  # Changed to return False instead of None
 
     subject = "Free Games on Epic Games Store!"
 
@@ -246,11 +269,13 @@ def send_email(free_games):
             logging.info("Sending email...")
             server.send_message(msg)
             logging.info("Email sent successfully.")
+            return True  # Return True on successful send
     except Exception as e:
         logging.error(f"Failed to send email: {e}")
+        return False  # Return False if sending fails
 
 
-def manage_notification_history(games, history_file="notification_history.json"):
+def manage_notification_history(games, history_file="notification_history.json", update_history=True):
     """Manage notification history to avoid duplicate notifications."""
     try:
         # Create history file if it doesn't exist
@@ -271,15 +296,18 @@ def manage_notification_history(games, history_file="notification_history.json")
         
         # Filter out games we've already notified about
         new_games = []
+        new_game_ids = []  # Store new game IDs separately
         for game in games:
             game_id = f"{game['title']}_{game['end_date']}"
             if game_id not in history['notified_games']:
                 new_games.append(game)
-                history['notified_games'].append(game_id)
+                new_game_ids.append(game_id)
         
-        # Update history file with new games
-        with open(history_file, 'w') as f:
-            json.dump(history, f, indent=2)
+        # Only update history file if requested and there are new games
+        if update_history and new_game_ids:
+            history['notified_games'].extend(new_game_ids)
+            with open(history_file, 'w') as f:
+                json.dump(history, f, indent=2)
         
         return new_games
     except Exception as e:
@@ -299,18 +327,30 @@ def _is_old_notification(game_id, current_time):
 
 def main():
     """Main function to fetch games and send notifications."""
-    logging.info("Fetching free games...")
-    free_games = fetch_free_games()
-    if free_games:
-        # Filter out games we've already notified about
-        new_games = manage_notification_history(free_games)
-        if new_games:
-            logging.info(f"Found {len(new_games)} new free games! Sending notification...")
-            send_email(new_games)
+    try:
+        # Check environment variables first
+        check_env_variables()
+        
+        logging.info("Fetching free games...")
+        free_games = fetch_free_games()
+        if free_games:
+            # First check for new games without updating history
+            new_games = manage_notification_history(free_games, update_history=False)
+            if new_games:
+                logging.info(f"Found {len(new_games)} new free games! Sending notification...")
+                if send_email(new_games):
+                    # Only update history if email was sent successfully
+                    manage_notification_history(new_games)
+                    logging.info("Notification history updated.")
+                else:
+                    logging.warning("Email failed to send, notification history not updated.")
+            else:
+                logging.info("No new free games to notify about.")
         else:
-            logging.info("No new free games to notify about.")
-    else:
-        logging.info("No free games available at the moment.")
+            logging.info("No free games available at the moment.")
+    except Exception as e:
+        logging.error(f"Script failed: {e}")
+        raise  # Re-raise the exception to make GitHub Actions fail
 
 
 if __name__ == "__main__":

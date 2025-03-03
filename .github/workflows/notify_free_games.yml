@@ -35,7 +35,13 @@ jobs:
         PASSWORD: ${{ secrets.PASSWORD }}
         TO_EMAIL: ${{ secrets.TO_EMAIL }}
         FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
-      run: python check_free_games.py
+      run: |
+        # Verify environment variables are set
+        if [ -z "$SMTP_SERVER" ] || [ -z "$SMTP_PORT" ] || [ -z "$EMAIL" ] || [ -z "$PASSWORD" ] || [ -z "$TO_EMAIL" ] || [ -z "$FROM_EMAIL" ]; then
+          echo "Error: Missing required environment variables"
+          exit 1
+        fi
+        python check_free_games.py
 
     - name: Save Notification History
       if: success()
