@@ -171,4 +171,4 @@ cython_debug/
 .pypirc
 
 # Notification history
-notification_history.json
+# notification_history.json
