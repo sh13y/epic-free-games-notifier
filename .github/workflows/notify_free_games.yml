@@ -25,6 +25,7 @@ jobs:
       run: |
         if [ ! -f notification_history.json ]; then
           echo '{"notified_games": []}' > notification_history.json
+          git add notification_history.json
         fi
 
     - name: Run Script
@@ -50,3 +51,6 @@ jobs:
         commit_message: "Update notification history [skip ci]"
         file_pattern: "notification_history.json"
         commit_author: GitHub Actions <actions@github.com>
+        commit_options: '--no-verify'
+        status_options: '--untracked-files=no'
+        add_options: '-f'
