@@ -1,33 +1,42 @@
-import requests
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from dotenv import load_dotenv
-import os
 import datetime
 import logging
+import os
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+import requests
+from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 SMTP_SERVER = os.getenv("SMTP_SERVER")
 SMTP_PORT = os.getenv("SMTP_PORT")
 EMAIL = os.getenv("EMAIL")  # This is your SMTP login email
 PASSWORD = os.getenv("PASSWORD")
 TO_EMAIL = os.getenv("TO_EMAIL")
-FROM_EMAIL = os.getenv("FROM_EMAIL")  # This is the email you want to appear in the "From" field
+FROM_EMAIL = os.getenv(
+    "FROM_EMAIL"
+)  # This is the email you want to appear in the "From" field
+
 
 def format_date(date_string):
     """Format the date string to a more readable format."""
     try:
         date_obj = datetime.datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.000Z")
-        return date_obj.strftime("%B %d, %Y at %I:%M %p")  # Example: January 09, 2025 at 04:00 PM
+        return date_obj.strftime(
+            "%B %d, %Y at %I:%M %p"
+        )  # Example: January 09, 2025 at 04:00 PM
     except ValueError:
         logging.error(f"Error parsing date: {date_string}")
         return date_string  # Return the original string if parsing fails
+
 
 def fetch_free_games():
     """Fetch free games from the Epic Games Store."""
@@ -38,41 +47,68 @@ def fetch_free_games():
         data = response.json()
     except requests.RequestException as e:
         logging.error(f"Error fetching free games: {e}")
-        return []
-    
+        return None
+
     free_games = []
-    for game in data.get("data", {}).get("Catalog", {}).get("searchStore", {}).get("elements", []):
-        if game.get("promotions"):
-            for promo in game["promotions"].get("promotionalOffers", []):
-                for offer in promo.get("promotionalOffers", []):
-                    # Check if the game is free (no price or marked as "free")
-                    discounted_price = game.get("price", {}).get("totalPrice", {}).get("discountPrice", 0)
-                    
-                    if discounted_price == 0:  # Check if it's free
-                        # Extracting the correct urlSlug from catalogNs.mappings
-                        url_slug = next((mapping.get('pageSlug') for mapping in game.get('catalogNs', {}).get('mappings', []) if mapping.get('pageSlug')), None)
-                        
-                        if url_slug:  # Ensure url_slug is not None
-                            free_games.append({
-                                "title": game.get("title"),
-                                "description": game.get("description", "No description available."),
-                                "original_price": "Free",
-                                "discounted_price": "Free",
-                                "image_url": game.get("keyImages", [{}])[0].get("url", ""),
-                                "url": f"https://store.epicgames.com/en-US/p/{url_slug}",
-                                "start_date": offer.get("startDate"),
-                                "end_date": offer.get("endDate"),
-                            })
+    try:
+        games: list[dict] = data["data"]["Catalog"]["searchStore"]["elements"]
+    except (KeyError, TypeError):
+        return None
+
+    for game in games:
+        if not game.get("promotions"):
+            continue
+
+        for promo in game["promotions"].get("promotionalOffers", []):
+            for offer in promo.get("promotionalOffers", []):
+                # Check if the game is free (no price or marked as "free")
+                discounted_price = (
+                    game.get("price", {}).get("totalPrice", {}).get("discountPrice", 0)
+                )
+
+                # Check if it's free
+                if discounted_price != 0:
+                    continue
+
+                # Extracting the correct urlSlug from catalogNs.mappings
+                url_slug = next(
+                    (
+                        mapping.get("pageSlug")
+                        for mapping in game.get("catalogNs", {}).get("mappings", [])
+                        if mapping.get("pageSlug")
+                    ),
+                    None,
+                )
+
+                # Ensure url_slug is not None
+                if not url_slug:
+                    continue
+
+                free_games.append(
+                    {
+                        "title": game.get("title"),
+                        "description": game.get(
+                            "description", "No description available."
+                        ),
+                        "original_price": "Free",
+                        "discounted_price": "Free",
+                        "image_url": game.get("keyImages", [{}])[0].get("url", ""),
+                        "url": f"https://store.epicgames.com/en-US/p/{url_slug}",
+                        "start_date": offer.get("startDate"),
+                        "end_date": offer.get("endDate"),
+                    }
+                )
     return free_games
+
 
 def send_email(free_games):
     """Send an email with details about free games."""
     if not free_games:
         logging.info("No free games to notify.")
-        return
-    
+        return None
+
     subject = "Free Games on Epic Games Store!"
-    
+
     # Modern, professional, and responsive email body with a border
     body = """
     <html>
@@ -169,7 +205,9 @@ def send_email(free_games):
     """
     # Build the email body with the game's details, including image, description, and price
     for game in free_games:
-        end_date = format_date(game['end_date'])  # Format the end date for better readability
+        end_date = format_date(
+            game["end_date"]
+        )  # Format the end date for better readability
         body += f"""
         <div class="game">
             <img src="{game['image_url']}" alt="{game['title']}" />
@@ -182,7 +220,7 @@ def send_email(free_games):
             </div>
         </div>
         """
-    
+
     body += """
             </div>
         </div>
@@ -209,6 +247,7 @@ def send_email(free_games):
     except Exception as e:
         logging.error(f"Failed to send email: {e}")
 
+
 def main():
     """Main function to fetch games and send notifications."""
     logging.info("Fetching free games...")
@@ -218,6 +257,7 @@ def main():
         send_email(free_games)
     else:
         logging.info("No free games available at the moment.")
+
 
 if __name__ == "__main__":
     main()
