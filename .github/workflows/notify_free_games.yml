@@ -21,6 +21,12 @@ jobs:
     - name: Install Dependencies
       run: pip install requests python-dotenv
 
+    - name: Setup Notification History
+      run: |
+        if [ ! -f notification_history.json ]; then
+          echo '{"notified_games": []}' > notification_history.json
+        fi
+
     - name: Run Script
       env:
         SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
@@ -28,5 +34,13 @@ jobs:
         EMAIL: ${{ secrets.EMAIL }}
         PASSWORD: ${{ secrets.PASSWORD }}
         TO_EMAIL: ${{ secrets.TO_EMAIL }}
-        FROM_EMAIL: ${{ secrets.FROM_EMAIL }}  # Added FROM_EMAIL here
+        FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
       run: python check_free_games.py
+
+    - name: Save Notification History
+      if: success()
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "Update notification history [skip ci]"
+        file_pattern: "notification_history.json"
+        commit_author: GitHub Actions <actions@github.com>

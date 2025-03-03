@@ -4,6 +4,8 @@ import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import json
+from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
@@ -248,13 +250,65 @@ def send_email(free_games):
         logging.error(f"Failed to send email: {e}")
 
 
+def manage_notification_history(games, history_file="notification_history.json"):
+    """Manage notification history to avoid duplicate notifications."""
+    try:
+        # Create history file if it doesn't exist
+        history_path = Path(history_file)
+        if not history_path.exists():
+            history_path.write_text('{"notified_games": []}')
+
+        # Read existing history
+        with open(history_file, 'r') as f:
+            history = json.load(f)
+        
+        # Clean up old entries (older than 30 days)
+        current_time = datetime.datetime.now()
+        history['notified_games'] = [
+            game_id for game_id in history['notified_games']
+            if not _is_old_notification(game_id, current_time)
+        ]
+        
+        # Filter out games we've already notified about
+        new_games = []
+        for game in games:
+            game_id = f"{game['title']}_{game['end_date']}"
+            if game_id not in history['notified_games']:
+                new_games.append(game)
+                history['notified_games'].append(game_id)
+        
+        # Update history file with new games
+        with open(history_file, 'w') as f:
+            json.dump(history, f, indent=2)
+        
+        return new_games
+    except Exception as e:
+        logging.error(f"Error managing notification history: {e}")
+        return games  # Return all games if there's an error
+
+def _is_old_notification(game_id, current_time):
+    """Check if a notification is older than 30 days."""
+    try:
+        # Extract end_date from game_id (format: "title_end_date")
+        end_date_str = game_id.split('_')[-1]
+        end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%dT%H:%M:%S.000Z")
+        return (current_time - end_date).days > 30
+    except Exception:
+        return False  # Keep entry if we can't parse the date
+
+
 def main():
     """Main function to fetch games and send notifications."""
     logging.info("Fetching free games...")
     free_games = fetch_free_games()
     if free_games:
-        logging.info("Free games found! Sending notification...")
-        send_email(free_games)
+        # Filter out games we've already notified about
+        new_games = manage_notification_history(free_games)
+        if new_games:
+            logging.info(f"Found {len(new_games)} new free games! Sending notification...")
+            send_email(new_games)
+        else:
+            logging.info("No new free games to notify about.")
     else:
         logging.info("No free games available at the moment.")
 
